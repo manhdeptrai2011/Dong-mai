@@ -1,11 +1,165 @@
-local player = game.Players. LocalPlayer
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lì Xì May Mắn 2026</title>
+    <style>
+        :root { --red: #e63946; --gold: #ffb703; --dark-red: #9b2226; }
+        body { margin: 0; padding: 0; background: #1a1a1a; font-family: 'Arial', sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        
+        .box { text-align: center; z-index: 10; position: relative; width: 100%; }
+        h1#title { color: var(--gold); font-size: 2.5rem; text-transform: uppercase; margin-bottom: 30px; text-shadow: 0 0 15px rgba(255,183,3,0.5); }
+        
+        /* Bao lì xì */
+        .envelope {
+            width: 160px; height: 260px; background: var(--red); border-radius: 12px;
+            margin: 0 auto; cursor: pointer; position: relative;
+            border: 3px solid var(--gold); box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            transition: 0.4s; display: flex; align-items: center; justify-content: center;
+        }
+        .envelope:hover { transform: scale(1.1) rotate(3deg); }
+        .envelope.shake { animation: shake 0.6s infinite; }
+        .envelope::after {
+            content: "🧧"; font-size: 60px;
+        }
+        .envelope-top {
+            position: absolute; top: 0; width: 100%; height: 70px;
+            background: var(--dark-red); border-radius: 9px 9px 50% 50%;
+            border-bottom: 2px solid var(--gold);
+        }
 
+        /* Kết quả */
+        #result { display: none; }
+        .money { font-size: 4rem; color: var(--gold); font-weight: 900; margin: 20px 0; animation: grow 0.5s ease-out; }
+        .wish { color: white; font-size: 1.2rem; margin-top: 10px; font-style: italic; }
 
-local banDuration = 1 
-local reason = "Cheating | ID 1337"
+        @keyframes shake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(8deg); }
+            75% { transform: rotate(-8deg); }
+        }
+        @keyframes grow { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+    </style>
+</head>
+<body>
 
-local message = string.format("You were kicked from this experience: \nYou are banned for [%d yeas ]\nReason: %s\nFuture bans will be PERMANENT. Do not break the rules.",
-banDuration,
-reason
-)
-player: Kick(message)
+<canvas id="fireworks"></canvas>
+
+<div class="box">
+    <h1 id="title">🏮 Lì Xì May Mắn 🏮</h1>
+    
+    <div id="envelope-area">
+        <div class="envelope shake" onclick="openLixi()">
+            <div class="envelope-top"></div>
+        </div>
+        <p style="color: #ccc; margin-top: 25px;">Chạm vào bao lì xì để nhận lộc đầu năm!</p>
+    </div>
+
+    <div id="result">
+        <div class="money" id="amount">0đ</div>
+        <div class="wish">lì xì cho tao !</div>
+        <button onclick="location.reload()" style="margin-top: 30px; padding: 10px 20px; background: var(--gold); border: none; font-weight: bold; border-radius: 5px; cursor: pointer;">Nhận lại lộc khác</button>
+    </div>
+</div>
+
+<audio id="sound-ting">
+    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    function openLixi() {
+        const title = document.getElementById('title');
+        const envArea = document.getElementById('envelope-area');
+        const resArea = document.getElementById('result');
+        const amountTxt = document.getElementById('amount');
+        const ting = document.getElementById('sound-ting');
+
+        // Đổi tiêu đề
+        title.innerText = "🧧 Lì xì cho Mạnh 🧧";
+        title.style.color = "#ff4d4d";
+
+        // Tính tiền ngẫu nhiên từ 100k đến 1 triệu (bước nhảy 20k)
+        const min = 5; // 100/20
+        const max = 50; // 1000/20
+        const randomVal = Math.floor(Math.random() * (max - min + 1)) + min;
+        const totalMoney = (randomVal * 20000).toLocaleString('vi-VN') + "đ";
+
+        // Chuyển màn hình
+        envArea.style.display = 'none';
+        resArea.style.display = 'block';
+        amountTxt.innerText = totalMoney;
+
+        // Hiệu ứng âm thanh và pháo hoa
+        ting.play();
+        startFireworks();
+    }
+
+    function startFireworks() {
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.destX = Math.random() * canvas.width;
+                this.destY = Math.random() * (canvas.height / 2);
+                this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+                this.reached = false;
+                this.sparks = [];
+            }
+            update() {
+                if (!this.reached) {
+                    this.y -= 10;
+                    if (this.y <= this.destY) {
+                        this.reached = true;
+                        for(let i=0; i<30; i++) this.sparks.push(new Spark(this.x, this.y, this.color));
+                    }
+                }
+            }
+            draw() {
+                if (!this.reached) {
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x, this.y, 3, 3);
+                }
+                this.sparks.forEach((s, i) => {
+                    s.update(); s.draw();
+                    if (s.alpha <= 0) this.sparks.splice(i, 1);
+                });
+            }
+        }
+
+        class Spark {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                this.vx = Math.random() * 4 - 2;
+                this.vy = Math.random() * 4 - 2;
+                this.alpha = 1;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.02; }
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI*2); ctx.fill();
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(26, 26, 26, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.05) particles.push(new Particle());
+            particles.forEach((p) => p.update());
+            particles.forEach((p) => p.draw());
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }
+</script>
+</body>
+</html>
